@@ -10,7 +10,7 @@ import {
 import styled from "styled-components";
 import { RecoilRoot, useRecoilState, useRecoilValue } from "recoil";
 import { IMarketCodes, selectedCoinState } from "./atom";
-import { useFetchMarketCode } from "use-upbit-api";
+import { useFetchMarketCode, useUpbitWebSocket } from "use-upbit-api";
 
 const getTodayDate = () => {
   const todayDate = new Date();
@@ -19,6 +19,17 @@ const getTodayDate = () => {
   const date = todayDate.getDate().toString().padStart(2, "0");
   const dateStr = year + "-" + month + "-" + date;
   return dateStr;
+};
+
+const updateCandle = (currentCandle: CandlestickData, tradePrice: number) => {
+  if (currentCandle.high < tradePrice) {
+    currentCandle.high = tradePrice;
+  }
+  if (currentCandle.low > tradePrice) {
+    currentCandle.low = tradePrice;
+  }
+  currentCandle.close = tradePrice;
+  return currentCandle;
 };
 
 interface IFetchedMinuteCandleData {
@@ -35,9 +46,51 @@ interface IFetchedMinuteCandleData {
   unit: number;
 }
 
+interface ITicker {
+  type: string;
+  code: string;
+  opening_price: number;
+  high_price: number;
+  low_price: number;
+  trade_price: number;
+  prev_closing_price: number;
+  acc_trade_price: number;
+  change: string;
+  change_price: number;
+  signed_change_price: number;
+  change_rate: number;
+  signed_change_rate: number;
+  ask_bid: string;
+  trade_volume: number;
+  acc_trade_volume: number;
+  trade_date: string;
+  trade_time: string;
+  trade_timestamp: number;
+  acc_ask_volume: number;
+  acc_bid_volume: number;
+  highest_52_week_price: number;
+  highest_52_week_date: string;
+  lowest_52_week_price: number;
+  lowest_52_week_date: string;
+  market_state: string;
+  is_trading_suspended: boolean;
+  delisting_date: null;
+  market_warning: string;
+  timestamp: number;
+  acc_trade_price_24h: number;
+  acc_trade_volume_24h: number;
+  stream_type: string;
+}
+
+interface IUseUpbitWebSocket {
+  socket: WebSocket | null;
+  isConnected: boolean;
+  socketData?: ITicker[];
+}
+
 interface IChartComponent {
   processedData?: CandlestickData[];
-  updatedCandle?: CandlestickData;
+  updatedCandle?: CandlestickData[];
 }
 
 function ChartComponent({ processedData, updatedCandle }: IChartComponent) {
@@ -106,7 +159,7 @@ function ChartComponent({ processedData, updatedCandle }: IChartComponent) {
 
   useEffect(() => {
     if (updatedCandle) {
-      newSeries.current?.update(updatedCandle);
+      newSeries.current?.update(updatedCandle[0]);
     }
   }, [updatedCandle]);
 
@@ -130,18 +183,29 @@ function Contents() {
     setFetchedData(json);
   }
 
+  const { socket, isConnected, socketData }: IUseUpbitWebSocket =
+    useUpbitWebSocket(selectedCoin, "ticker", {
+      throttle_time: 100,
+      max_length_queue: 100,
+    });
+  const [updatedData, setUpdatedData] = useState<CandlestickData[]>();
+  const lastFetchedTimestamp = useRef<UTCTimestamp>();
+  const lastFetchedCandle = useRef<CandlestickData>();
+  const lastRecievedTimestamp = useRef<UTCTimestamp>();
+  const oneMinuteCandle = useRef<CandlestickData>({} as CandlestickData);
+
   useEffect(() => {
     fetchMinuteCandle(selectedCoin);
   }, [selectedCoin]);
 
   useEffect(() => {
     if (fetchedData) {
-      const converted: CandlestickData[] = fetchedData.map((ele) => {
-        // const date = new Date(ele.timestamp);
-        // console.log(ele.timestamp);
-        // console.log(date.toDateString());
+      const reversed = [...fetchedData].reverse();
+      const converted: CandlestickData[] = reversed.map((ele) => {
+        const time = (ele.timestamp / 1000) as UTCTimestamp;
+        lastFetchedTimestamp.current = time;
         const newData = {
-          time: (ele.timestamp / 1000) as UTCTimestamp,
+          time,
           open: ele.opening_price,
           high: ele.high_price,
           low: ele.low_price,
@@ -150,12 +214,57 @@ function Contents() {
 
         return newData;
       });
-      const reversed = [...converted].reverse();
-      setConvertedData(reversed);
+      setConvertedData(converted);
+      lastFetchedCandle.current = converted.slice(-1)[0];
     }
   }, [fetchedData]);
 
-  return <ChartComponent processedData={convertedData} />;
+  useEffect(() => {
+    if (socketData) {
+      console.log(socketData);
+      const converted = socketData.map((ele) => {
+        const remain = Math.ceil(ele.timestamp / 1000) % 60;
+        let time = (Math.ceil(ele.timestamp / 1000) - remain) as UTCTimestamp;
+        if (
+          lastFetchedTimestamp.current &&
+          lastFetchedTimestamp.current > time
+        ) {
+          time = lastFetchedTimestamp.current;
+          if (lastFetchedCandle.current)
+            oneMinuteCandle.current = updateCandle(
+              lastFetchedCandle.current,
+              ele.trade_price
+            );
+        } else if (
+          lastRecievedTimestamp.current &&
+          lastRecievedTimestamp.current != time
+        ) {
+          oneMinuteCandle.current = {} as CandlestickData;
+          oneMinuteCandle.current = {
+            time,
+            open: ele.trade_price,
+            high: ele.trade_price,
+            low: ele.trade_price,
+            close: ele.trade_price,
+          };
+        } else {
+          console.log("here");
+          oneMinuteCandle.current = updateCandle(
+            oneMinuteCandle.current,
+            ele.trade_price
+          );
+        }
+        lastRecievedTimestamp.current = time;
+
+        return oneMinuteCandle.current;
+      });
+      setUpdatedData(converted);
+    }
+  }, [socketData]);
+
+  return (
+    <ChartComponent processedData={convertedData} updatedCandle={updatedData} />
+  );
 }
 
 function App() {
