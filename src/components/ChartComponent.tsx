@@ -15,10 +15,6 @@ function ChartComponent({ processedData, updatedCandle }: IChartComponent) {
   const newSeries = useRef<ISeriesApi<"Candlestick">>();
 
   useEffect(() => {
-    if (processedData) console.log({ processedData });
-  }, [processedData]);
-
-  useEffect(() => {
     if (processedData) {
       const handleResize = () => {
         chart.current?.applyOptions({
