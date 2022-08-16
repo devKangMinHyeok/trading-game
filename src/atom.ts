@@ -1,15 +1,10 @@
 import { atom } from "recoil";
+import { IMarketCodes } from "./interfaces/interfaces";
 
 export const marketCodesState = atom({
   key: "marketCodesState",
   default: [],
 });
-
-export interface IMarketCodes {
-  market: string;
-  korean_name: string;
-  english_name: string;
-}
 
 export const selectedCoinState = atom({
   key: "selectedCoinState",
