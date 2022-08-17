@@ -77,6 +77,7 @@ function Chart() {
   const [lastLowPrice, setLastLowPrice] = useRecoilState(lastLowPriceState);
   const longLiquid = useRecoilValue(longLiquidState);
   const [longAccount, setLongAccount] = useRecoilState(longAccountState);
+  const resetLongAccount = useResetRecoilState(longAccountState);
   const longAccountDetail = useRecoilValue(longAccountDetailState);
 
   const [updatedData, setUpdatedData] = useState<CandlestickData[]>();
@@ -88,12 +89,17 @@ function Chart() {
   ) => {
     return setTimeout(() => {
       setUpdatedData(newCandle);
-      setLongAccount((prev) => {
-        const newLog = cloneDeep(prev);
-        newLog.currentPositionValue =
-          newCandle[0].close * newLog.openPositionAmount;
-        return newLog;
-      });
+      if (longAccountDetail.positionActive) {
+        setLongAccount((prev) => {
+          const newLog = cloneDeep(prev);
+          newLog.currentPositionValue =
+            newCandle[0].close * newLog.openPositionAmount;
+          return newLog;
+        });
+        if (longAccountDetail.liquidPrice >= newCandle[0].low) {
+          resetLongAccount();
+        }
+      }
       if (index === lastIndex) {
         setIsCandleMoving(false);
       }
@@ -368,9 +374,6 @@ function Trade() {
   const resetLongAccount = useResetRecoilState(longAccountState);
   useEffect(() => {
     if (longAccount.positionActive) {
-      if (longAccount.liquidPrice >= lastLowPrice) {
-        resetLongAccount();
-      }
       setLongAccount((prev) => {
         const newValue = cloneDeep(prev);
         newValue.currentPositionValue =

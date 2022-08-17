@@ -13,6 +13,7 @@
     "@types/react-dom": "^18.0.6",
     "@types/recoil": "^0.0.9",
     "@types/styled-components": "^5.1.26",
+    "gh-pages": "^4.0.0",
     "lightweight-charts": "^3.8.0",
     "lodash": "^4.17.21",
     "react": "^18.2.0",
@@ -27,8 +28,8 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "deploy": "cp build/index.html build/404.html && gh-pages -d build",
+    "predeploy": "npm run build"
   },
   "eslintConfig": {
     "extends": [
@@ -47,5 +48,6 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  }
+  },
+  "homepage": "http://devKangMinHyeok.github.io/trading-game/"
 }
