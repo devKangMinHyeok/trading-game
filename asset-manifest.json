@@ -1,0 +1,10 @@
+{
+  "files": {
+    "main.js": "/trading-game/static/js/main.62b0f0a8.js",
+    "index.html": "/trading-game/index.html",
+    "main.62b0f0a8.js.map": "/trading-game/static/js/main.62b0f0a8.js.map"
+  },
+  "entrypoints": [
+    "static/js/main.62b0f0a8.js"
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "short_name": "Trading Game",
+  "name": "Trading Game",
+  "icons": [],
+  "start_url": ".",
+  "display": "standalone"
+}
