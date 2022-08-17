@@ -66,3 +66,23 @@ export interface IChartComponent {
   processedData?: CandlestickData[];
   updatedCandle?: CandlestickData[];
 }
+
+export interface IFutureAccount {
+  openPositionValue: number;
+  currentPositionValue: number;
+}
+
+export interface IFutureAccountDetail {
+  openPositionValue: number;
+  currentPositionValue: number;
+  unrealizedPnl: number;
+  profitRate: number;
+}
+
+export interface ITotalAccount {
+  cash: number;
+  futureValuation: number;
+  totalAsset: number;
+  unrealizedPnl: number;
+  profitRate: number;
+}

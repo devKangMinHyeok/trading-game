@@ -67,7 +67,7 @@ function Chart() {
         if (index === lastIndex) {
           setIsCandleMoving(false);
         }
-      }, 500 * index);
+      }, 100 * index);
     },
     []
   );
@@ -124,7 +124,16 @@ const AccountContainer = styled.div`
 `;
 
 function Account() {
-  return <AccountContainer>Account</AccountContainer>;
+  return (
+    <AccountContainer>
+      <div>나의 계좌</div>
+      <div>총 보유 자산(=보유현금 + 보유코인가치) : 1,100,000원</div>
+
+      <div>보유 현금 : 500,000원</div>
+
+      <div>보유코인 가치(Long 보유 코인 가치 + short) : 600,000원</div>
+    </AccountContainer>
+  );
 }
 
 const TradeContainer = styled.div`
@@ -132,7 +141,36 @@ const TradeContainer = styled.div`
 `;
 
 function Trade() {
-  return <TradeContainer>Trade</TradeContainer>;
+  return (
+    <TradeContainer>
+      <div>주문 가격 : [종가]</div>
+      <div>수수료 : [0.01% - global 살때만]</div>
+      <hr />
+      <div>Long</div>
+
+      <div>레버리지 : [x1-x50]</div>
+      <div>개수 : [ ]</div>
+      <div>주문 총액 : [주문 금액 * 개수 + 수수료]</div>
+      <div>청산가 : [주문 금액 * (1 - (1/레버리지))]</div>
+
+      <div>미실현 손익 : +50,000원(+5%)</div>
+      <button>Buy</button>
+      <button>close</button>
+      <hr />
+
+      <div>Short</div>
+      <div>레버리지 : [x1-x50]</div>
+      <div>개수 : [ ]</div>
+
+      <div>주문 총액 : [주문 금액 * 개수 + 수수료]</div>
+      <div>청산가 : [주문 금액 * (1 - (1/레버리지))]</div>
+      <div>미실현 손익 : +50,000원</div>
+      <button>Sell</button>
+      <button>close</button>
+      <hr />
+      <div>총 미실현 손익 : +100,000원(+10%)</div>
+    </TradeContainer>
+  );
 }
 
 const ControlContainer = styled.div`
@@ -163,7 +201,7 @@ const DisplayContainer = styled.div`
   border: 1px solid red;
   display: grid;
   grid-template-columns: 2fr 1fr;
-  grid-template-rows: 10vh 55vh 25vh;
+  grid-template-rows: 25vh 55vh 25vh;
 `;
 
 function Display() {
