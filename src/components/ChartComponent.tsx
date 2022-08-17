@@ -2,12 +2,19 @@ import {
   createChart,
   CrosshairMode,
   IChartApi,
+  IPriceLine,
   ISeriesApi,
+  LineStyle,
+  PriceLineOptions,
 } from "lightweight-charts";
 import { useEffect, useRef } from "react";
 import { IChartComponent } from "../interfaces/interfaces";
 
-function ChartComponent({ processedData, updatedCandle }: IChartComponent) {
+function ChartComponent({
+  processedData,
+  updatedCandle,
+  liquidPrice,
+}: IChartComponent) {
   const backgroundColor = "white";
   const textColor = "black";
   const chartContainerRef = useRef<HTMLDivElement>(null);
@@ -72,6 +79,21 @@ function ChartComponent({ processedData, updatedCandle }: IChartComponent) {
       newSeries.current?.update(updatedCandle[0]);
     }
   }, [updatedCandle]);
+
+  useEffect(() => {
+    const priceLine = newSeries.current?.createPriceLine({
+      price: liquidPrice,
+      color: "#ff0000",
+      lineWidth: 2,
+      lineStyle: LineStyle.Dotted,
+      axisLabelVisible: true,
+      title: "청산",
+    } as PriceLineOptions);
+
+    return () => {
+      if (priceLine) newSeries.current?.removePriceLine(priceLine);
+    };
+  }, [liquidPrice]);
 
   return <div ref={chartContainerRef}></div>;
 }
