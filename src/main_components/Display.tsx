@@ -240,7 +240,26 @@ function LongPositionController() {
         console.log(newLongAccount);
         setLongAccount(newLongAccount);
       } else if (longAccountDetail.positionActive) {
-        alert("중복된 방향으로 포지션을 설정할 수 없습니다.");
+        setLongAccount((prev) => {
+          const newLog = cloneDeep(prev);
+          const newOpenPositionValue = lastClosePrice * longCoinAmount;
+          newLog.openPrice =
+            (newLog.openPrice * newLog.openPositionAmount +
+              newOpenPositionValue) /
+            (newLog.openPositionAmount + longCoinAmount);
+
+          newLog.openPositionAmount =
+            newLog.openPositionAmount + longCoinAmount;
+
+          newLog.openPositionValue =
+            newLog.openPositionValue + newOpenPositionValue;
+
+          newLog.currentPositionValue =
+            newLog.currentPositionValue + newOpenPositionValue;
+
+          newLog.liquidPrice = newLog.openPrice * (1 - 1 / newLog.leverage);
+          return newLog;
+        });
       } else if (longCoinAmount === 0) {
         alert("0개는 주문할 수 없습니다.");
       }
@@ -319,7 +338,7 @@ function LongPositionController() {
         원
       </div>
 
-      {!isCandleMoving && !longAccountDetail.positionActive ? (
+      {!isCandleMoving ? (
         <button onClick={longBuyHandler}>Buy</button>
       ) : (
         <button disabled>Buy</button>

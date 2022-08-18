@@ -52,10 +52,13 @@ function ChartComponent({
           timeScale: {
             timeVisible: true,
             secondsVisible: false,
+            rightOffset: 10,
+            lockVisibleTimeRangeOnResize: true,
           },
         });
       }
       chart.current?.timeScale().fitContent();
+
       newSeries.current = chart.current?.addCandlestickSeries({
         upColor: "#D24F45",
         wickUpColor: "#D24F45",
