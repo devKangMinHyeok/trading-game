@@ -209,8 +209,6 @@ const LeverageBox = styled.label<LeverageBoxProps>`
   margin: 1px;
 `;
 
-const AmountRateBox = styled.label``;
-
 function LongPositionController() {
   const isCandleMoving = useRecoilValue(isCandleMovingState);
   const lastClosePrice = useRecoilValue(lastClosePriceState);
@@ -293,7 +291,7 @@ function LongPositionController() {
       } else if (longCoinAmount === 0) {
         alert("0개는 주문할 수 없습니다.");
       }
-      setLongCoinAmount(0);
+      setAmountRate(0);
     }
   };
 
