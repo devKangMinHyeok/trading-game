@@ -1,6 +1,6 @@
 import { CandlestickData, Time, UTCTimestamp } from "lightweight-charts";
-import { cloneDeep, delay, random, throttle } from "lodash";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { cloneDeep, random } from "lodash";
+import { useEffect, useState } from "react";
 import { useRecoilState, useRecoilValue, useResetRecoilState } from "recoil";
 import styled from "styled-components";
 import {
@@ -193,6 +193,7 @@ function Account() {
 
 const TradeContainer = styled.div`
   border: 1px solid black;
+  grid-row: 2 / span 2;
 `;
 
 interface LeverageBoxProps {
@@ -216,7 +217,6 @@ function LongPositionController() {
 
   const [cashAccount, setCashAccount] = useRecoilState(cashAccountState);
   const [longAccount, setLongAccount] = useRecoilState(longAccountState);
-  const resetLongAccount = useResetRecoilState(longAccountState);
 
   const [longLeverage, setLongLeverage] = useState(INIT_LEVERAGE);
   const [longCoinAmount, setLongCoinAmount] = useState(1);
@@ -229,16 +229,6 @@ function LongPositionController() {
     if (newValue > LEVERAGE_MAX) newValue = LEVERAGE_MAX;
     if (newValue < LEVERAGE_MIN) newValue = LEVERAGE_MIN;
     setLongLeverage(newValue);
-  };
-
-  const longCoinAmountHandler = (evt: React.ChangeEvent<HTMLInputElement>) => {
-    const maxAmount = Math.floor(
-      cashAccount / (lastClosePrice * (1 + TRANSACTION_FEE_RATE))
-    );
-    let newValue = Math.floor(Number(evt.currentTarget.value));
-    if (newValue < 0) newValue = 0;
-    if (newValue > maxAmount) newValue = maxAmount;
-    setLongCoinAmount(newValue);
   };
 
   const amountRateHandler = (evt: React.ChangeEvent<HTMLInputElement>) => {
@@ -292,13 +282,6 @@ function LongPositionController() {
         alert("0개는 주문할 수 없습니다.");
       }
       setAmountRate(0);
-    }
-  };
-
-  const longCloseHandler = () => {
-    if (!isCandleMoving) {
-      setCashAccount((prev) => prev + longAccountDetail.totalAsset);
-      resetLongAccount();
     }
   };
 
@@ -381,49 +364,96 @@ function LongPositionController() {
       ) : (
         <button disabled>Buy</button>
       )}
-
-      <div>
-        <div>
-          평단가 :{" "}
-          {longAccountDetail.openPrice.toLocaleString("ko-KR", {
-            maximumFractionDigits: 2,
-          })}
-          원
-        </div>
-        <div>
-          현재가 :{" "}
-          {lastClosePrice.toLocaleString("ko-KR", {
-            maximumFractionDigits: 2,
-          })}
-          원
-        </div>
-        <div>보유 개수 : {longAccountDetail.openPositionAmount}개</div>
-        <div>레버리지 : x{longAccountDetail.leverage}</div>
-        <div>
-          청산가 :{" "}
-          {longAccountDetail.liquidPrice.toLocaleString("ko-KR", {
-            maximumFractionDigits: 3,
-          })}
-          원
-        </div>
-        <div>
-          미실현 손익 :{" "}
-          {longAccountDetail.unrealizedPnl.toLocaleString("ko-KR", {
-            maximumFractionDigits: 0,
-          })}
-          원(
-          {longAccountDetail.profitRate
-            ? `${(longAccountDetail.profitRate * 100).toFixed(2)}%`
-            : "0%"}
-          )
-        </div>
-        {!isCandleMoving && longAccountDetail.positionActive ? (
-          <button onClick={longCloseHandler}>close</button>
-        ) : (
-          <button disabled>close</button>
-        )}
-      </div>
     </>
+  );
+}
+
+const PositionInfoContainer = styled.div`
+  width: 100%;
+  border: 1px solid black;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+`;
+const LongPositionInfoContainer = styled.div`
+  border: 1px solid black;
+`;
+const ShortPositionInfoContainer = styled.div`
+  border: 1px solid black;
+`;
+
+function LongPositionInfo() {
+  const isCandleMoving = useRecoilValue(isCandleMovingState);
+  const longAccountDetail = useRecoilValue(longAccountDetailState);
+  const resetLongAccount = useResetRecoilState(longAccountState);
+  const lastClosePrice = useRecoilValue(lastClosePriceState);
+  const [cashAccount, setCashAccount] = useRecoilState(cashAccountState);
+
+  const longCloseHandler = () => {
+    if (!isCandleMoving) {
+      setCashAccount((prev) => prev + longAccountDetail.totalAsset);
+      resetLongAccount();
+    }
+  };
+  return (
+    <LongPositionInfoContainer>
+      <div>
+        평단가 :{" "}
+        {longAccountDetail.openPrice.toLocaleString("ko-KR", {
+          maximumFractionDigits: 2,
+        })}
+        원
+      </div>
+      <div>
+        현재가 :{" "}
+        {isCandleMoving
+          ? "산정중... "
+          : `${lastClosePrice.toLocaleString("ko-KR", {
+              maximumFractionDigits: 2,
+            })}원`}
+      </div>
+      <div>보유 개수 : {longAccountDetail.openPositionAmount}개</div>
+      <div>레버리지 : x{longAccountDetail.leverage}</div>
+      <div>
+        청산가 :{" "}
+        {longAccountDetail.liquidPrice.toLocaleString("ko-KR", {
+          maximumFractionDigits: 3,
+        })}
+        원
+      </div>
+      <div>
+        미실현 손익 :{" "}
+        {longAccountDetail.unrealizedPnl.toLocaleString("ko-KR", {
+          maximumFractionDigits: 0,
+        })}
+        원(
+        {longAccountDetail.profitRate
+          ? `${(longAccountDetail.profitRate * 100).toFixed(2)}%`
+          : "0%"}
+        )
+      </div>
+      {!isCandleMoving && longAccountDetail.positionActive ? (
+        <button onClick={longCloseHandler}>close</button>
+      ) : (
+        <button disabled>close</button>
+      )}
+    </LongPositionInfoContainer>
+  );
+}
+
+function ShortPositionInfo() {
+  return (
+    <ShortPositionInfoContainer>
+      ShortPositionInfoContainer
+    </ShortPositionInfoContainer>
+  );
+}
+
+function PositionInfo() {
+  return (
+    <PositionInfoContainer>
+      <LongPositionInfo />
+      <ShortPositionInfo />
+    </PositionInfoContainer>
   );
 }
 
@@ -431,10 +461,9 @@ function Trade() {
   const turnNumber = useRecoilValue(turnNumberState);
   const isCandleMoving = useRecoilValue(isCandleMovingState);
   const lastClosePrice = useRecoilValue(lastClosePriceState);
-  const lastLowPrice = useRecoilValue(lastLowPriceState);
 
   const [longAccount, setLongAccount] = useRecoilState(longAccountState);
-  const resetLongAccount = useResetRecoilState(longAccountState);
+
   useEffect(() => {
     if (longAccount.positionActive) {
       setLongAccount((prev) => {
@@ -488,11 +517,12 @@ function Control() {
 }
 
 const DisplayContainer = styled.div`
-  width: 900px;
+  width: 1250px;
+  height: 500px;
   border: 1px solid red;
   display: grid;
   grid-template-columns: 2fr 1fr;
-  grid-template-rows: 15vh 65vh 15vh;
+  grid-template-rows: 1fr 1.5fr 1fr 1fr;
 `;
 
 function Display() {
@@ -505,6 +535,7 @@ function Display() {
         <Chart />
         <Account />
         <Trade />
+        <PositionInfo />
         <Shop />
         <Control />
       </DisplayContainer>

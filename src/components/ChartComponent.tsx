@@ -27,6 +27,7 @@ function ChartComponent({
       const handleResize = () => {
         chart.current?.applyOptions({
           width: chartContainerRef.current?.clientWidth,
+          height: chartContainerRef.current?.clientHeight,
         });
       };
       if (chartContainerRef.current) {
@@ -36,7 +37,7 @@ function ChartComponent({
             textColor,
           },
           width: chartContainerRef.current?.clientWidth,
-          height: 300,
+          height: 240,
           crosshair: {
             mode: CrosshairMode.Normal,
           },
