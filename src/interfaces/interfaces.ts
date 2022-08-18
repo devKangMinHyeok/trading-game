@@ -66,6 +66,7 @@ export interface IChartComponent {
   processedData?: CandlestickData[];
   updatedCandle?: CandlestickData[];
   liquidPrice?: number;
+  positionOpenPrice?: number;
 }
 
 export interface IFutureAccount {

@@ -14,6 +14,7 @@ function ChartComponent({
   processedData,
   updatedCandle,
   liquidPrice,
+  positionOpenPrice,
 }: IChartComponent) {
   const backgroundColor = "white";
   const textColor = "black";
@@ -86,17 +87,32 @@ function ChartComponent({
   useEffect(() => {
     const priceLine = newSeries.current?.createPriceLine({
       price: liquidPrice,
-      color: "#ff0000",
+      color: "#8400ff",
       lineWidth: 2,
       lineStyle: LineStyle.Dotted,
       axisLabelVisible: true,
-      title: "청산",
+      title: "청산가",
     } as PriceLineOptions);
 
     return () => {
       if (priceLine) newSeries.current?.removePriceLine(priceLine);
     };
   }, [liquidPrice]);
+
+  useEffect(() => {
+    const priceLine = newSeries.current?.createPriceLine({
+      price: positionOpenPrice,
+      color: "#00d890",
+      lineWidth: 2,
+      lineStyle: LineStyle.Dotted,
+      axisLabelVisible: true,
+      title: "평단가",
+    } as PriceLineOptions);
+
+    return () => {
+      if (priceLine) newSeries.current?.removePriceLine(priceLine);
+    };
+  }, [positionOpenPrice]);
 
   return <div ref={chartContainerRef}></div>;
 }

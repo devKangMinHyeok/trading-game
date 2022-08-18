@@ -141,6 +141,9 @@ function Chart() {
             ? longAccountDetail.liquidPrice
             : longLiquid
         }
+        positionOpenPrice={
+          longAccountDetail.positionActive ? longAccountDetail.openPrice : 0
+        }
       />
     </ChartContainer>
   );
@@ -382,7 +385,13 @@ function LongPositionController() {
       )}
 
       <div>
-        <div>진입가 : {longAccountDetail.openPrice}원</div>
+        <div>
+          평단가 :{" "}
+          {longAccountDetail.openPrice.toLocaleString("ko-KR", {
+            maximumFractionDigits: 2,
+          })}
+          원
+        </div>
         <div>
           현재가 :{" "}
           {lastClosePrice.toLocaleString("ko-KR", {
