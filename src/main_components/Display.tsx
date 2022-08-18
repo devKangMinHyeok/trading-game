@@ -14,6 +14,7 @@ import {
   lastLowPriceState,
   LEVERAGE_MAX,
   LEVERAGE_MIN,
+  LEVERAGE_UNITS,
   longAccountDetailState,
   longAccountState,
   longLiquidState,
@@ -191,6 +192,22 @@ const TradeContainer = styled.div`
   border: 1px solid black;
 `;
 
+interface LeverageBoxProps {
+  selected: boolean;
+  disabled: boolean;
+}
+
+const LeverageBox = styled.label<LeverageBoxProps>`
+  border: 1px solid #96ffb5;
+  background-color: ${(props) => (props.selected ? "#00eb46" : "#bdbdbd86")};
+  opacity: ${(props) => (props.disabled ? 0.5 : 1)};
+  border-radius: 5px;
+  cursor: pointer;
+  margin: 1px;
+`;
+
+const AmountRateBox = styled.label``;
+
 function LongPositionController() {
   const isCandleMoving = useRecoilValue(isCandleMovingState);
   const lastClosePrice = useRecoilValue(lastClosePriceState);
@@ -202,11 +219,12 @@ function LongPositionController() {
 
   const [longLeverage, setLongLeverage] = useState(INIT_LEVERAGE);
   const [longCoinAmount, setLongCoinAmount] = useState(1);
+  const [amountRate, setAmountRate] = useState(0);
   const [longTotalPrice, setLongTotalPrice] = useState(0);
   const [longLiquid, setLongLiquid] = useRecoilState(longLiquidState);
 
   const longLeverageHandler = (evt: React.ChangeEvent<HTMLInputElement>) => {
-    let newValue = Math.ceil(Number(evt.currentTarget.value));
+    let newValue = Number(evt.currentTarget.value);
     if (newValue > LEVERAGE_MAX) newValue = LEVERAGE_MAX;
     if (newValue < LEVERAGE_MIN) newValue = LEVERAGE_MIN;
     setLongLeverage(newValue);
@@ -220,6 +238,16 @@ function LongPositionController() {
     if (newValue < 0) newValue = 0;
     if (newValue > maxAmount) newValue = maxAmount;
     setLongCoinAmount(newValue);
+  };
+
+  const amountRateHandler = (evt: React.ChangeEvent<HTMLInputElement>) => {
+    let newValue = Number(evt.currentTarget.value);
+    if (newValue < 0) {
+      newValue = 0;
+    } else if (newValue > 100) {
+      newValue = 100;
+    }
+    setAmountRate(newValue);
   };
 
   const longBuyHandler = (
@@ -237,7 +265,6 @@ function LongPositionController() {
           openPositionAmount: longCoinAmount,
           currentPositionValue: lastClosePrice * longCoinAmount,
         };
-        console.log(newLongAccount);
         setLongAccount(newLongAccount);
       } else if (longAccountDetail.positionActive) {
         setLongAccount((prev) => {
@@ -264,7 +291,6 @@ function LongPositionController() {
         alert("0개는 주문할 수 없습니다.");
       }
       setLongCoinAmount(0);
-      setLongLeverage(1);
     }
   };
 
@@ -282,46 +308,56 @@ function LongPositionController() {
   }, [lastClosePrice, longCoinAmount]);
 
   useEffect(() => {
-    setLongLiquid(lastClosePrice * (1 - 1 / longLeverage));
-  }, [lastClosePrice, longLeverage]);
+    if (isCandleMoving) {
+      setLongLiquid(0);
+    } else {
+      setLongLiquid(lastClosePrice * (1 - 1 / longLeverage));
+    }
+  }, [lastClosePrice, longLeverage, isCandleMoving]);
+
+  useEffect(() => {
+    const targetCash = (cashAccount * amountRate) / 100;
+    const ableCoinAmount = Math.floor(
+      targetCash / (lastClosePrice * (1 + TRANSACTION_FEE_RATE))
+    );
+    setLongCoinAmount(ableCoinAmount);
+  }, [amountRate]);
 
   return (
     <>
       <div>
-        레버리지 :{" "}
-        <input
-          type={"number"}
-          name={"long-leverage-number"}
-          min={LEVERAGE_MIN}
-          max={LEVERAGE_MAX}
-          step={1}
-          value={longLeverage}
-          onChange={longLeverageHandler}
-        />
+        <div>레버리지</div>
+        {LEVERAGE_UNITS.map((ele) => (
+          <LeverageBox
+            key={ele}
+            selected={longLeverage == ele}
+            disabled={longAccountDetail.positionActive}
+          >
+            {ele}
+            <input
+              type={"radio"}
+              value={ele}
+              checked={longLeverage == ele}
+              onChange={longLeverageHandler}
+              disabled={longAccountDetail.positionActive}
+              style={{ visibility: "hidden" }}
+            />{" "}
+          </LeverageBox>
+        ))}
       </div>
-      <label>
-        x1
+
+      <div>
         <input
           type={"range"}
-          name={"long-leverage-scroll"}
-          min={LEVERAGE_MIN}
-          max={LEVERAGE_MAX}
-          step={1}
-          value={longLeverage}
-          onChange={longLeverageHandler}
-        />
-        x50
-      </label>
-      <div>
-        개수 :{" "}
-        <input
-          type={"number"}
-          name={"long-leverage-number"}
           min={0}
-          step={1}
-          value={longCoinAmount}
-          onChange={longCoinAmountHandler}
+          max={100}
+          step={5}
+          value={amountRate}
+          onChange={amountRateHandler}
+          disabled={isCandleMoving}
         />
+        {amountRate}% (보유 현금 대비)
+        <div>개수 :{longCoinAmount}</div>
       </div>
       <div>
         주문 총액 :{" "}
@@ -332,10 +368,11 @@ function LongPositionController() {
       </div>
       <div>
         청산가 :{" "}
-        {longLiquid.toLocaleString("ko-KR", {
-          maximumFractionDigits: 3,
-        })}
-        원
+        {isCandleMoving
+          ? "산정중..."
+          : `${longLiquid.toLocaleString("ko-KR", {
+              maximumFractionDigits: 3,
+            })}원`}
       </div>
 
       {!isCandleMoving ? (
