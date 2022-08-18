@@ -1,10 +1,10 @@
 {
   "files": {
-    "main.js": "/trading-game/static/js/main.74b5cf45.js",
+    "main.js": "/trading-game/static/js/main.683ff42f.js",
     "index.html": "/trading-game/index.html",
-    "main.74b5cf45.js.map": "/trading-game/static/js/main.74b5cf45.js.map"
+    "main.683ff42f.js.map": "/trading-game/static/js/main.683ff42f.js.map"
   },
   "entrypoints": [
-    "static/js/main.74b5cf45.js"
+    "static/js/main.683ff42f.js"
   ]
 }
