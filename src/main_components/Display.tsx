@@ -1,6 +1,4 @@
-import { useRecoilValue } from "recoil";
 import styled from "styled-components";
-import { turnNumberState } from "../atom";
 import Account from "./Account";
 import Chart from "./Chart";
 import Control from "./Control";
