@@ -16,7 +16,8 @@ function Account() {
         {totalAccount.totalAsset.toLocaleString("ko-KR", {
           maximumFractionDigits: 0,
         })}
-        원 | {(totalAccount.profitRate * 100).toFixed(2)}%
+        원 |{" "}
+        {(((totalAccount.totalAsset - 1000000) / 1000000) * 100).toFixed(2)}%
       </div>
       <div>
         보유 현금 :{" "}

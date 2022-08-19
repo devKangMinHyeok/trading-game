@@ -65,8 +65,10 @@ export interface IUseUpbitWebSocket {
 export interface IChartComponent {
   processedData?: CandlestickData[];
   updatedCandle?: CandlestickData[];
-  liquidPrice?: number;
-  positionOpenPrice?: number;
+  longLiquidPrice?: number;
+  longPositionOpenPrice?: number;
+  shortLiquidPrice?: number;
+  shortPositionOpenPrice?: number;
 }
 
 export interface IFutureAccount {

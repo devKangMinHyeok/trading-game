@@ -6,6 +6,7 @@ import styled from "styled-components";
 import {
   CHART_TIME_UNIT_SECOND,
   initialCandleState,
+  INITIAL_CANDLE_CLOSE,
   isCandleMovingState,
   lastClosePriceState,
   lastHighPriceState,
@@ -13,6 +14,9 @@ import {
   longAccountDetailState,
   longAccountState,
   longLiquidState,
+  shortAccountDetailState,
+  shortAccountState,
+  shortLiquidState,
   SPLIT_UNIT_OF_CANDLE,
   turnNumberState,
 } from "../atom";
@@ -69,10 +73,16 @@ function Chart() {
     useRecoilState(lastClosePriceState);
   const [lastHighPrice, setLastHighPrice] = useRecoilState(lastHighPriceState);
   const [lastLowPrice, setLastLowPrice] = useRecoilState(lastLowPriceState);
+
   const longLiquid = useRecoilValue(longLiquidState);
   const [longAccount, setLongAccount] = useRecoilState(longAccountState);
   const resetLongAccount = useResetRecoilState(longAccountState);
   const longAccountDetail = useRecoilValue(longAccountDetailState);
+
+  const shortLiquid = useRecoilValue(shortLiquidState);
+  const [shortAccount, setShortAccount] = useRecoilState(shortAccountState);
+  const resetShortAccount = useResetRecoilState(shortAccountState);
+  const shortAccountDetail = useRecoilValue(shortAccountDetailState);
 
   const [updatedData, setUpdatedData] = useState<CandlestickData[]>();
 
@@ -92,6 +102,17 @@ function Chart() {
         });
         if (longAccountDetail.liquidPrice >= newCandle[0].low) {
           resetLongAccount();
+        }
+      }
+      if (shortAccountDetail.positionActive) {
+        setShortAccount((prev) => {
+          const newLog = cloneDeep(prev);
+          newLog.currentPositionValue =
+            newCandle[0].close * newLog.openPositionAmount;
+          return newLog;
+        });
+        if (shortAccountDetail.liquidPrice <= newCandle[0].high) {
+          resetShortAccount();
         }
       }
       if (index === lastIndex) {
@@ -129,13 +150,21 @@ function Chart() {
       <ChartComponent
         processedData={initialCandle}
         updatedCandle={updatedData}
-        liquidPrice={
+        longLiquidPrice={
           longAccountDetail.positionActive
             ? longAccountDetail.liquidPrice
             : longLiquid
         }
-        positionOpenPrice={
+        longPositionOpenPrice={
           longAccountDetail.positionActive ? longAccountDetail.openPrice : 0
+        }
+        shortLiquidPrice={
+          shortAccountDetail.positionActive
+            ? shortAccountDetail.liquidPrice
+            : shortLiquid
+        }
+        shortPositionOpenPrice={
+          shortAccountDetail.positionActive ? shortAccountDetail.openPrice : 0
         }
       />
     </ChartContainer>

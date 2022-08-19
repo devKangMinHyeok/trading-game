@@ -47,12 +47,12 @@ function LongPositionController() {
 
   const [cashAccount, setCashAccount] = useRecoilState(cashAccountState);
   const [longAccount, setLongAccount] = useRecoilState(longAccountState);
+  const [longLiquid, setLongLiquid] = useRecoilState(longLiquidState);
 
   const [longLeverage, setLongLeverage] = useState(INIT_LEVERAGE);
   const [longCoinAmount, setLongCoinAmount] = useState(1);
   const [amountRate, setAmountRate] = useState(0);
   const [longTotalPrice, setLongTotalPrice] = useState(0);
-  const [longLiquid, setLongLiquid] = useRecoilState(longLiquidState);
 
   const longLeverageHandler = (evt: React.ChangeEvent<HTMLInputElement>) => {
     let newValue = Number(evt.currentTarget.value);

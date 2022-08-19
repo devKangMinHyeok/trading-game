@@ -16,9 +16,9 @@ export const INIT_LEVERAGE = 1;
 export const LEVERAGE_MIN = 1;
 export const LEVERAGE_MAX = 50;
 export const LEVERAGE_UNITS = [1, 2, 3, 5, 10, 25, 50];
-const INITIAL_CANDLE_CLOSE = 150;
-const INITIAL_CANDLE_HIGH = 200;
-const INITIAL_CANDLE_LOW = 50;
+export const INITIAL_CANDLE_CLOSE = 150;
+export const INITIAL_CANDLE_HIGH = 200;
+export const INITIAL_CANDLE_LOW = 50;
 
 export const marketCodesState = atom({
   key: "marketCodesState",
@@ -84,6 +84,11 @@ export const longLiquidState = atom({
   default: 0,
 });
 
+export const shortLiquidState = atom({
+  key: "shortLiquidState",
+  default: 0,
+});
+
 // 게좌 시스템
 export const cashAccountState = atom({
   key: "accountState",
@@ -144,7 +149,7 @@ export const shortAccountDetailState = selector({
     const shortAccount = get(shortAccountState);
     const unrealizedPnl =
       shortAccount.leverage *
-      (shortAccount.currentPositionValue - shortAccount.openPositionValue);
+      (shortAccount.openPositionValue - shortAccount.currentPositionValue);
     return {
       positionActive: shortAccount.positionActive,
       openPrice: shortAccount.openPrice,

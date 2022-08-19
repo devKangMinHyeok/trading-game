@@ -6,6 +6,8 @@ import {
   lastClosePriceState,
   longAccountDetailState,
   longAccountState,
+  shortAccountDetailState,
+  shortAccountState,
 } from "../atom";
 
 const PositionInfoContainer = styled.div`
@@ -81,9 +83,60 @@ function LongPositionInfo() {
 }
 
 function ShortPositionInfo() {
+  const isCandleMoving = useRecoilValue(isCandleMovingState);
+  const shortAccountDetail = useRecoilValue(shortAccountDetailState);
+  const resetShortAccount = useResetRecoilState(shortAccountState);
+  const lastClosePrice = useRecoilValue(lastClosePriceState);
+  const [cashAccount, setCashAccount] = useRecoilState(cashAccountState);
+
+  const shortCloseHandler = () => {
+    if (!isCandleMoving) {
+      setCashAccount((prev) => prev + shortAccountDetail.totalAsset);
+      resetShortAccount();
+    }
+  };
   return (
     <ShortPositionInfoContainer>
-      ShortPositionInfoContainer
+      <div>
+        평단가 :{" "}
+        {shortAccountDetail.openPrice.toLocaleString("ko-KR", {
+          maximumFractionDigits: 2,
+        })}
+        원
+      </div>
+      <div>
+        현재가 :{" "}
+        {isCandleMoving
+          ? "산정중... "
+          : `${lastClosePrice.toLocaleString("ko-KR", {
+              maximumFractionDigits: 2,
+            })}원`}
+      </div>
+      <div>보유 개수 : {shortAccountDetail.openPositionAmount}개</div>
+      <div>레버리지 : x{shortAccountDetail.leverage}</div>
+      <div>
+        청산가 :{" "}
+        {shortAccountDetail.liquidPrice.toLocaleString("ko-KR", {
+          maximumFractionDigits: 3,
+        })}
+        원
+      </div>
+      <div>
+        미실현 손익 :{" "}
+        {shortAccountDetail.unrealizedPnl.toLocaleString("ko-KR", {
+          maximumFractionDigits: 0,
+        })}
+        원(
+        {shortAccountDetail.profitRate
+          ? `${(shortAccountDetail.profitRate * 100).toFixed(2)}%`
+          : "0%"}
+        )
+      </div>
+      {!isCandleMoving && shortAccountDetail.positionActive ? (
+        <button onClick={shortCloseHandler}>close</button>
+      ) : (
+        <button disabled>close</button>
+      )}
     </ShortPositionInfoContainer>
   );
 }

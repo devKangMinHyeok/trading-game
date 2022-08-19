@@ -13,8 +13,10 @@ import { IChartComponent } from "../interfaces/interfaces";
 function ChartComponent({
   processedData,
   updatedCandle,
-  liquidPrice,
-  positionOpenPrice,
+  longLiquidPrice,
+  longPositionOpenPrice,
+  shortLiquidPrice,
+  shortPositionOpenPrice,
 }: IChartComponent) {
   const backgroundColor = "white";
   const textColor = "black";
@@ -86,34 +88,66 @@ function ChartComponent({
   }, [updatedCandle]);
 
   useEffect(() => {
-    const priceLine = newSeries.current?.createPriceLine({
-      price: liquidPrice,
+    const longLiquidLine = newSeries.current?.createPriceLine({
+      price: longLiquidPrice,
       color: "#8400ff",
       lineWidth: 2,
       lineStyle: LineStyle.Dotted,
       axisLabelVisible: true,
-      title: "청산가",
+      title: "Long 청산가",
     } as PriceLineOptions);
 
     return () => {
-      if (priceLine) newSeries.current?.removePriceLine(priceLine);
+      if (longLiquidLine) newSeries.current?.removePriceLine(longLiquidLine);
     };
-  }, [liquidPrice]);
+  }, [longLiquidPrice]);
 
   useEffect(() => {
-    const priceLine = newSeries.current?.createPriceLine({
-      price: positionOpenPrice,
+    const shortLiquidLine = newSeries.current?.createPriceLine({
+      price: shortLiquidPrice,
+      color: "#ff8800",
+      lineWidth: 2,
+      lineStyle: LineStyle.Dotted,
+      axisLabelVisible: true,
+      title: "Short 청산가",
+    } as PriceLineOptions);
+
+    return () => {
+      if (shortLiquidLine) newSeries.current?.removePriceLine(shortLiquidLine);
+    };
+  }, [shortLiquidPrice]);
+
+  useEffect(() => {
+    const longOpenPriceLine = newSeries.current?.createPriceLine({
+      price: longPositionOpenPrice,
       color: "#00d890",
       lineWidth: 2,
       lineStyle: LineStyle.Dotted,
       axisLabelVisible: true,
-      title: "평단가",
+      title: "Long 평단가",
     } as PriceLineOptions);
 
     return () => {
-      if (priceLine) newSeries.current?.removePriceLine(priceLine);
+      if (longOpenPriceLine)
+        newSeries.current?.removePriceLine(longOpenPriceLine);
     };
-  }, [positionOpenPrice]);
+  }, [longPositionOpenPrice]);
+
+  useEffect(() => {
+    const shortOpenPriceLine = newSeries.current?.createPriceLine({
+      price: shortPositionOpenPrice,
+      color: "#d8009e",
+      lineWidth: 2,
+      lineStyle: LineStyle.Dotted,
+      axisLabelVisible: true,
+      title: "Short 평단가",
+    } as PriceLineOptions);
+
+    return () => {
+      if (shortOpenPriceLine)
+        newSeries.current?.removePriceLine(shortOpenPriceLine);
+    };
+  }, [shortPositionOpenPrice]);
 
   return <div ref={chartContainerRef}></div>;
 }
