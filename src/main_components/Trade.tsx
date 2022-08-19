@@ -115,7 +115,7 @@ function LongPositionController() {
     setLongTotalPrice(
       lastClosePrice *
         longCoinAmount *
-        (1 + TRANSACTION_FEE_RATE * longLeverage)
+        (1 + (TRANSACTION_FEE_RATE / 100) * longLeverage)
     );
   }, [lastClosePrice, longCoinAmount]);
 
@@ -130,7 +130,8 @@ function LongPositionController() {
   useEffect(() => {
     const targetCash = (cashAccount * amountRate) / 100;
     const ableCoinAmount = Math.floor(
-      targetCash / (lastClosePrice * (1 + TRANSACTION_FEE_RATE * longLeverage))
+      targetCash /
+        (lastClosePrice * (1 + (TRANSACTION_FEE_RATE / 100) * longLeverage))
     );
     setLongCoinAmount(ableCoinAmount);
   }, [amountRate, longLeverage]);

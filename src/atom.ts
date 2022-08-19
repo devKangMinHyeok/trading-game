@@ -11,7 +11,7 @@ import {
 export const INITIAL_TIME = 1660647240;
 export const SPLIT_UNIT_OF_CANDLE = 40;
 export const CHART_TIME_UNIT_SECOND = 60;
-export const TRANSACTION_FEE_RATE = 0.01;
+export const TRANSACTION_FEE_RATE = 0.04;
 export const INIT_LEVERAGE = 1;
 export const LEVERAGE_MIN = 1;
 export const LEVERAGE_MAX = 50;
