@@ -41,6 +41,11 @@ export const turnNumberState = atom({
   default: 1,
 });
 
+export const isLongControllerActiveState = atom({
+  key: "isLongControllerActiveState",
+  default: true,
+});
+
 export const isCandleMovingState = atom({
   key: "isCandleMovingState",
   default: false,
